@@ -3,7 +3,7 @@
 # enumerate. Safe to re-run. Requires the stack to be up: docker compose up -d
 set -euo pipefail
 
-URL="http://localhost:8080"
+URL="http://localhost:8090"
 wp() { docker compose run --rm -T wpcli "$@"; }
 
 echo "[*] Waiting for WordPress core files + database..."

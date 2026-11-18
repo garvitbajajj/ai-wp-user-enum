@@ -5,14 +5,14 @@ the structured evidence each returns, confirms the admin user, orders the
 brute-force, and writes the final summary. The "muscle" (actual HTTP work) stays
 in enumerators.py / bruteforce.py, exposed to the agent as in-process MCP tools.
 
-Requires Node.js (the SDK drives a bundled Claude Code CLI) and ANTHROPIC_API_KEY.
-If either is missing, run() raises AgentUnavailable and the caller falls back to
-the deterministic pipeline.
+Requires Node.js (the SDK drives a bundled Claude Code CLI) and an authenticated
+Claude session — either a Claude Pro/Max subscription login (`claude setup-token`)
+or ANTHROPIC_API_KEY. If the runtime or auth is missing, run() raises
+AgentUnavailable and the caller falls back to the deterministic pipeline.
 """
 from __future__ import annotations
 
 import asyncio
-import os
 
 from .bruteforce import bruteforce_login, load_passwords
 from .config import Config
@@ -141,16 +141,20 @@ async def _run_async(config: Config, client: HttpClient, findings: Findings) -> 
 
 
 def run(config: Config, client: HttpClient, findings: Findings) -> None:
-    """Run the agent. Raises AgentUnavailable if the runtime/key isn't ready."""
+    """Run the agent. Raises AgentUnavailable if the runtime/auth isn't ready.
+
+    Auth is handled by the SDK: it uses a Claude Pro/Max subscription login
+    (`claude setup-token`) or ANTHROPIC_API_KEY, whichever is present. We don't
+    pre-check a specific one — a missing/invalid session surfaces as a runtime
+    error below and falls back to the deterministic pipeline.
+    """
     try:
         import claude_agent_sdk  # noqa: F401
     except ImportError as exc:
         raise AgentUnavailable(f"claude-agent-sdk not installed: {exc}") from exc
-    if not os.getenv("ANTHROPIC_API_KEY"):
-        raise AgentUnavailable("ANTHROPIC_API_KEY is not set")
     try:
         asyncio.run(_run_async(config, client, findings))
     except AgentUnavailable:
         raise
-    except Exception as exc:  # SDK/runtime failure (e.g. Node missing) -> fall back
+    except Exception as exc:  # Node missing / not authenticated / API error -> fall back
         raise AgentUnavailable(f"agent runtime error: {exc}") from exc

@@ -95,7 +95,7 @@ disallowed; the agent can only use the four wpenum tools.
 ### 1. Bring up the vulnerable target (Docker)
 
 ```bash
-docker compose up -d      # WordPress on http://localhost:8080 + MariaDB
+docker compose up -d      # WordPress on http://localhost:8090 + MariaDB
 ./seed.sh                 # install WP (admin/admin123) + seed users with posts
 ```
 
@@ -112,9 +112,14 @@ pip install -r requirements.txt
 cp .env.example .env            # set ANTHROPIC_API_KEY for AI mode (optional)
 ```
 
-**AI mode requires [Node.js](https://nodejs.org/) 18+** — the Claude Agent SDK drives
-a bundled Claude Code CLI subprocess — plus `ANTHROPIC_API_KEY`. `--no-ai` mode needs
-neither.
+**AI mode requires [Node.js](https://nodejs.org/) 18+** (the Claude Agent SDK drives a
+bundled Claude Code CLI subprocess) plus **one** of:
+
+- a **Claude Pro/Max subscription** login — run `claude setup-token` once (no API
+  credits needed), or
+- an **`ANTHROPIC_API_KEY`** in `.env`.
+
+`--no-ai` mode needs none of this and always runs.
 
 ---
 
@@ -122,13 +127,13 @@ neither.
 
 ```bash
 # Deterministic pipeline (no API key / Node needed)
-python -m src.main --target http://localhost:8080 --no-ai
+python -m src.main --target http://localhost:8090 --no-ai
 
 # Full AI agent (default), also writing JSON
-python -m src.main --target http://localhost:8080 --json results.json
+python -m src.main --target http://localhost:8090 --json results.json
 
 # Config via env instead of flags
-export WP_TARGET_URL=http://localhost:8080
+export WP_TARGET_URL=http://localhost:8090
 python -m src.main
 ```
 
@@ -139,7 +144,7 @@ Key flags: `--target/-t`, `--ai`/`--no-ai`, `--model`, `--max-author-ids`,
 ### Example output (abridged)
 
 ```
-───────── WordPress User Enumeration — http://localhost:8080 ─────────
+───────── WordPress User Enumeration — http://localhost:8090 ─────────
 mode: ai
 
         Discovered users (3)
