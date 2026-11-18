@@ -85,10 +85,12 @@ def _build_tools(client: HttpClient, config: Config, findings: Findings):
           "error oracle.", {"username": str})
     async def t_confirm(args):
         res = confirm_username_via_login(client, config.target, args["username"])
-        findings.confirm_user(args["username"], res["status"] == "valid")
+        is_valid = res["status"] == "valid"
+        findings.confirm_user(args["username"], is_valid)
         findings.record_technique("login_error_oracle",
                                   f"wp-login.php?log={args['username']}",
-                                  [], f"{args['username']}: {res['status']} — {res['evidence']}")
+                                  [], f"{args['username']}: {res['status']} — {res['evidence']}",
+                                  status="confirmed" if is_valid else res["status"])
         return {"content": [{"type": "text", "text": f"{args['username']}: {res['status']} ({res['evidence']})"}]}
 
     @tool("bruteforce_admin", "Try a short common-password list against one "

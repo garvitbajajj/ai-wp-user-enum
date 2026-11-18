@@ -6,3 +6,4 @@ venv/
 .pytest_cache/
 *.json.out
 results/
+results.json

@@ -31,11 +31,13 @@ class Findings:
         found: list[dict] | None = None,
         evidence: str | None = None,
         error: str | None = None,
+        status: str | None = None,
     ) -> list[str]:
         """Log a technique run and merge any users it discovered.
 
         `found` is a list of {username, display_name?, user_id?}.
-        Returns the list of usernames discovered by this call.
+        `status` overrides the hit/miss label (e.g. a confirmation technique
+        that proves a user but discovers none). Returns usernames found here.
         """
         found = found or []
         names: list[str] = []
@@ -57,6 +59,7 @@ class Findings:
             "found": names,
             "evidence": evidence,
             "error": error,
+            "status": status,
         })
         return names
 

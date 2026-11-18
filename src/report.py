@@ -38,8 +38,14 @@ def render_cli(data: dict) -> None:
     # Technique evidence
     console.print("\n[bold]Techniques[/]")
     for t in data.get("techniques", []):
-        status = "[red]error[/]" if t.get("error") else (
-            "[green]hit[/]" if t.get("found") else "[yellow]miss[/]")
+        if t.get("error"):
+            status = "[red]error[/]"
+        elif t.get("status"):
+            status = f"[cyan]{t['status']}[/]"
+        elif t.get("found"):
+            status = "[green]hit[/]"
+        else:
+            status = "[yellow]miss[/]"
         console.print(f"  • {t['technique']} [{status}] — {t.get('evidence') or t.get('error') or ''}")
 
     # Brute-force

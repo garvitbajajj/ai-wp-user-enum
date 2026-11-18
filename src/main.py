@@ -36,9 +36,11 @@ def run_deterministic(config: Config, client: HttpClient, findings: Findings) ->
 
     # 4. Confirm via login-error oracle.
     res = confirm_username_via_login(client, config.target, admin_name)
-    findings.confirm_user(admin_name, res["status"] == "valid")
+    is_valid = res["status"] == "valid"
+    findings.confirm_user(admin_name, is_valid)
     findings.record_technique("login_error_oracle", f"wp-login.php?log={admin_name}",
-                              [], f"{admin_name}: {res['status']} — {res['evidence']}")
+                              [], f"{admin_name}: {res['status']} — {res['evidence']}",
+                              status="confirmed" if is_valid else res["status"])
 
     # 5. Brute-force the admin with the common-password list.
     try:
@@ -52,6 +54,14 @@ def run_deterministic(config: Config, client: HttpClient, findings: Findings) ->
 
 
 def main(argv: list[str] | None = None) -> int:
+    # Ensure non-ASCII report glyphs (box drawing, check marks) don't crash on
+    # Windows' legacy cp1252 console.
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8")
+        except Exception:
+            pass
+
     config = parse_config(argv)
     client = HttpClient(timeout=config.timeout)
 
@@ -71,9 +81,9 @@ def main(argv: list[str] | None = None) -> int:
         run_deterministic(config, client, findings)
 
     data = findings.to_dict()
-    report.render_cli(data)
-    if config.json_out:
+    if config.json_out:                 # write the deliverable first
         report.write_json(data, config.json_out)
+    report.render_cli(data)
     return 0
 
 
