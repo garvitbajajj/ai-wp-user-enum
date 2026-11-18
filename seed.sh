@@ -4,7 +4,7 @@
 set -euo pipefail
 
 URL="http://localhost:8090"
-wp() { docker compose run --rm -T wpcli "$@"; }
+wp() { docker compose run --rm -T wpcli wp "$@"; }
 
 echo "[*] Waiting for WordPress core files + database..."
 for i in $(seq 1 30); do
